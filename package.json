@@ -1,0 +1,14 @@
+{
+  "name": "getting-started-webassembly",
+  "version": "1.0.0",
+  "description": "start WebAssembly",
+  "main": "server.js",
+  "author": "Miguel Rivas <rivasmig@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

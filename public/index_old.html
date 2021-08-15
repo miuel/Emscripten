@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <style>
+        body {
+            background-color: darkgray;
+        }
+    </style>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAssembly Demo</title>
+</head>
+<body>
+    <h1>WebAssembly Demo</h1>
+    <script>
+
+        // Initialize wasm with custom memory (array buffer)
+        // 20 pages : 20 * 64kb (1.25mb), but in our case
+        // will customize 2 pages : 2 * 64kb (128kb)
+        const wasmMemory = new WebAssembly.Memory({initial: 2})
+
+        // Read a string out of Web Assembly memory
+        const readMemStr = (offset, length) => {
+            // and now instead use wasm.instance.exports.memory.buffer I'll use wasmMemory
+            const strBuffer = new Uint8Array(wasmMemory.buffer, offset, length);
+            //console.log(strBuffer);
+            const str = new TextDecoder().decode(strBuffer)
+            
+            // Notify and make use of new string
+            window.dispatchEvent(new CustomEvent( 'wasmValue', {detail: str}));
+        }
+
+        // Listen for new wasm strings
+        window.addEventListener('wasmValue', str => {
+            console.log('Recieved from C, ', str.detail);
+        })
+
+
+        // Imports obj
+        const imports = {
+            env: {
+                numLog: console.log,
+                strLog: readMemStr,
+                memory: wasmMemory,
+            }
+        }
+        WebAssembly.instantiateStreaming(fetch('/main.wasm'), imports)
+        .then(wasm => {
+            console.log('WASM ready!')
+            window.wasm = wasm
+
+            // log webassembly module
+            // console.log( WebAssembly.Module.exports(wasm.module) );
+            // console.log(wasm.instance.exports.getDoubleNumber(30));
+
+            // wasm.instance.exports.getDoubleNumber(33);
+
+            // log out all imported fn
+            //console.log(WebAssembly.Module.imports(wasm.module));
+        })
+    </script>
+</body>
+</html>
